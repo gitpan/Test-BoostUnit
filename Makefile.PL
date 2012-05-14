@@ -13,7 +13,11 @@ WriteMakefile(
       : ()),
     PL_FILES            => {},
     PREREQ_PM => {
+        'List::Util' => 0,
         'Test::More' => 0,
+        'File::Find' => 0,
+        'Digest::MD5' => 0,
+        'Getopt::CommandLineExports' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Test-BoostUnit-*' },
