@@ -16,11 +16,11 @@ Test::BoostUnit - Allow Tests to output Boost C++ XML format test reports
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 
 =head1 SYNOPSIS
@@ -58,13 +58,15 @@ Provides a collection of pretty print routines
 
 package Test::BoostUnit;
 
-my $CLASS = __PACKAGE__;
+#my $CLASS = __PACKAGE__;
 BEGIN {
-	use  Test::More;
+#	use  Test::More;
+	use Exporter();
     our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 # set the version for version checking
-    $VERSION = 0.03;
-    @ISA = qw( Test::More);
+    $VERSION = 0.04;
+    @ISA = qw( Exporter);
+	@EXPORT_OK = qw();
     %EXPORT_TAGS = ( ALL => [
         qw!&compareTwoDirecoryTrees  
             &compareTwoLists 
@@ -90,7 +92,7 @@ BEGIN {
 
 #your exported package globals go here,
 #as well as any optionally exported functions
-    @EXPORT = qw(&compareTwoDirecoryTrees  
+    @EXPORT_OK = qw(&compareTwoDirecoryTrees  
                     &compareTwoLists 
                     &makeCheck 
                     &makeCheckEqual  
@@ -110,50 +112,8 @@ BEGIN {
                     &makeCloseTestLog
                     &calculateErrorMetricForTwoHashes 
                     &calculateWeightedKappaOnConfusionMatrix
-					&ok 
-					&use_ok 
-					&require_ok 
-					&is 
-					&isnt 
-					&like 
-					&unlike 
-					&is_deeply 
-					&cmp_ok 
-					&skip 
-					&todo 
-					&todo_skip 
-					&pass 
-					&fail 
-					&eq_array 
-					&eq_hash 
-					&eq_set 
-					$TODO 
-					&plan 
-					&done_testing 
-					&can_ok 
-					&isa_ok 
-					&new_ok 
-					&diag 
-					&note 
-					&explain 
-					&subtest 
-					&BAIL_OUT
 );
 
-}
-
-
-sub ok ($;$) {
-    my( $test, $name ) = @_;
-    my $tb = Test::BoostUnit->builder;
-
-    return $tb->ok( $test, $name );
-}
-
-sub like ($$;$) {
-    my $tb = Test::BoostUnit->builder;
-
-    return $tb->like(@_);
 }
 
 =head2 calculateErrorMetricForTwoHashes
