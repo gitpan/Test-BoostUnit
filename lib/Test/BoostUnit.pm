@@ -16,16 +16,16 @@ Test::BoostUnit - Allow Tests to output Boost C++ XML format test reports
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 
 =head1 SYNOPSIS
 
-Provides a collection of pretty print routines
+A collection of routines to aid in automated testing
 
 =head1 EXPORT
 
@@ -63,8 +63,6 @@ BEGIN {
 #	use  Test::More;
 	use Exporter();
     our ($VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
-# set the version for version checking
-    $VERSION = 0.04;
     @ISA = qw( Exporter);
 	@EXPORT_OK = qw();
     %EXPORT_TAGS = ( ALL => [
@@ -136,6 +134,7 @@ The default calculates the L2 Norm
 sub calculateErrorMetricForTwoHashes
 {
     my %h = (
+        METRIC    => "",
         VECTOR1   => undef,
         VECTOR2   => undef,
         COMPARE_FUNC => sub {my ($a, $b) = @_; return [($a-$b)*($a-$b)];},
@@ -144,12 +143,49 @@ sub calculateErrorMetricForTwoHashes
         SUMMARY_FUNC => sub {my ($totalMetric, $totalPoints)= @_;
                             return 0 unless $totalPoints;
                             return ($$totalMetric[0]/$totalPoints) if $totalPoints;},
-        (   parseArgs \@_, 'VECTOR1=s%', 'VECTOR2=s%', 'COMPARE_FUNC=c&', 'ACCUMULATION_FUNC=c&', 'SUMMARY_FUNC=c&'),
+        (   parseArgs \@_, 'METRIC=s', 'VECTOR1=s%', 'VECTOR2=s%', 'COMPARE_FUNC=c&', 'ACCUMULATION_FUNC=c&', 'SUMMARY_FUNC=c&'),
     );
     my $V1 = $h{VECTOR1};
     my $V2 = $h{VECTOR2}; #Two Hash references
     my $numPoints = 0;
     my $totalMetric = [0];
+    if ($h{METRIC} eq "RMS") 
+    {
+            $h{SUMMARY_FUNC} = sub {my ($totalMetric, $totalPoints)= @_;
+                            return 0 unless $totalPoints;
+                            return sqrt($$totalMetric[0]/$totalPoints) if $totalPoints;};
+    
+    }
+    if ($h{METRIC} eq "Mean") 
+    {
+        $h{COMPARE_FUNC} = sub {my ($a, $b) = @_; return [($a-$b)];};
+    }
+    if ($h{METRIC} eq "MeanL1Norm") 
+    {
+        $h{COMPARE_FUNC} = sub {my ($a, $b) = @_; return [abs($a-$b)];};    
+    }
+    if ($h{METRIC} eq "RelativeMean") 
+    {
+        $h{COMPARE_FUNC} = sub {my ($a, $b) = @_; return [($a-$b)/$b] if $b;return [($a-$b)];};    
+    }
+    if ($h{METRIC} eq "RelativeL1Norm") 
+    {
+        $h{COMPARE_FUNC} = sub {my ($a, $b) = @_; return [abs($a-$b)/$b] if $b;return [abs($a-$b)];};
+    }
+    if ($h{METRIC} eq "RelativeMaxL1Norm") 
+    {
+        $h{SUMMARY_FUNC}        = sub {my ($totalMetric, $totalPoints)= @_; return $$totalMetric[0];};
+        $h{ACCUMULATION_FUNC}   = sub {my ($previousTotal, $currentValue) = @_;  return $$currentValue[0] > $$previousTotal[0] ? [$$currentValue[0]] : [$$previousTotal[0]];};
+        $h{COMPARE_FUNC}        = sub {my ($a, $b) = @_; return [abs(($a-$b)/$b)] if $b;return [abs($a-$b)];};
+    
+    }
+    if ($h{METRIC} eq "MaxL1Norm") 
+    {
+        $h{SUMMARY_FUNC}        = sub {my ($totalMetric, $totalPoints)= @_; return $$totalMetric[0];};
+        $h{ACCUMULATION_FUNC}   = sub {my ($previousTotal, $currentValue) = @_;  return $$currentValue[0] > $$previousTotal[0] ? [$$currentValue[0]] : [$$previousTotal[0]];};
+        $h{COMPARE_FUNC}        = sub {my ($a, $b) = @_; return [abs($a-$b)];};
+    }
+    
     foreach my $key ( sort keys %$V1 ) {
         if (exists $V2->{$key}) {
             my $XVal = $V1->{$key};
